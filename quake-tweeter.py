@@ -9,6 +9,7 @@
 #***************************************************
 import time
 import json
+import sys
 from twython import Twython
 
 global last_entry
@@ -74,7 +75,7 @@ def convertMonthToNum(monthStr):
     return month
 
 def send_tweet(tweet_str):
-    # print tweet_str
+    log(time.strftime("%c") + ": Tweeting: " + tweet_str)
     config = json.load(open('./config.json'))
     
     try:
@@ -89,6 +90,7 @@ def send_tweet(tweet_str):
         log(time.strftime("%c") + ": Error - failed to send tweet")
 
 def tweet(e):
+    # 
     # print e.title
     try:
         title = e.title.split(', ')
@@ -114,6 +116,11 @@ def tweet(e):
         month = convertMonthToNum(quake[0])
         day = int(quake[1])
         hour = int(quakeTime[0])
+        
+        if quake[5] == 'pm':
+            hour += 12
+            hour = hour % 24
+        
         minute = int(quakeTime[1])
         second = int(quakeTime[2])
         # print year, month, day, hour, minute, second
@@ -125,8 +132,11 @@ def tweet(e):
         
         if time_difference <= 300:
             send_tweet(title[0] + ' earthquake hits ' + title[3] + ' on ' + title[1] + ', ' + title[2])
-        
+        else:
+            log(time.strftime("%c") + ": Info - tweet not sent, too much time has passed. Secs: " + str(time_difference))
+    
     except:
+        print("Unexpected error:", sys.exc_info()[0])
         log(time.strftime("%c") + ": Warning - troubles formatting or the timing is off")
 
 def main():
